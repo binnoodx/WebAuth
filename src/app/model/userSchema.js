@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     userOTP:{
         type:Number
     },
-    GenerateDate:{
+    userOTPExpiry:{
         type:Date
     },
     forgetPassword:{

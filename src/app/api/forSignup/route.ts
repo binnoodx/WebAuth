@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/app/connect/dbConnect";
 import User from "@/app/model/userSchema";
-import { sendMail } from "@/app/helpers/mailer";
+// import { sendMail } from "@/app/helpers/mailer";
 
 export async function POST(req: NextRequest) {
     await dbConnect()
