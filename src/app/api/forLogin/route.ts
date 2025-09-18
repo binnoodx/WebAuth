@@ -7,27 +7,38 @@ export async function POST(req:NextRequest) {
     await dbConnect()
 
     try {
-
         const data = await req.json()
         const userEmail = data.userEmail
         const userPassword = data.userPassword
+
+
         const searchUser = await User.findOne({userEmail})
 
 
         if(!searchUser){
             return NextResponse.json({
-                message:"No such User Found!"
+
+                message:"No such User Found!",
+                success:false,
+                
             })
         }
         else{
             const searchUserPass = searchUser.userPassword
+
+            //TODO : Decrypt the hashed Password
+
+
             if(searchUserPass === userPassword){
+                
                 return NextResponse.json({
+                    status:true,
                     message:"successfully Login!"
                 })
             }
             else{
                 return NextResponse.json({
+                    status:false,
                     message:"Invalid Password"
                 })
             }
@@ -37,6 +48,9 @@ export async function POST(req:NextRequest) {
   
     } catch (error) {
 
-        console.log("Error in User Login")       
+        return NextResponse.json({
+            message:"Something Error in Signup.",
+            success:false
+        })     
     }    
 }

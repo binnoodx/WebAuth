@@ -1,23 +1,37 @@
-const nodemailer = require("nodemailer");
+import nodemailer from 'nodemailer';
+import User from '../model/userSchema';
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.ethereal.email",
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: "maddison53@ethereal.email",
-    pass: "jn7jnAPss4f63QBp6D",
-  },
-});
+interface req{
+    email:string,
+    otp:Number,
+    isVerify:Boolean
+}
 
-(async () => {
-  const info = await transporter.sendMail({
-    from: '"Maddison Foo Koch" <maddison53@ethereal.email>',
-    to: "bar@example.com, baz@example.com",
-    subject: "Hello ✔",
-    text: "Hello world?", // plain‑text body
-    html: "<b>Hello world?</b>", // HTML body
-  });
+export const sendEmail = async({email,otp,isVerify}:req) => {
+    try {
 
-  console.log("Message sent:", info.messageId);
-})();
+        var transport = nodemailer.createTransport({
+            host: "sandbox.smtp.mailtrap.io",
+            port: 2525,
+            auth: {
+              user: "d5efc0603c6faf",
+              pass: "0546719af64a2d"
+              //TODO: add these credentials to .env file
+            }
+          });
+        const mailOptions = {
+            from: 'noreply@web_auth.com',
+            to: email,
+            subject: isVerify ? "Verify that its you - WebAuth" : "Reset Your Password.",
+            html: isVerify ? `<p>Your Verification code is ${otp}</p>` : `<p>Your Reset Password code is ${otp}</p>`     
+        }
+
+
+        const mailresponse = await transport.sendMail
+        (mailOptions);
+        return mailresponse;
+
+    } catch (error:any) {
+        throw new Error(error.message);
+    }
+}

@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import React from "react"
 import { useForm } from "react-hook-form"
@@ -12,39 +13,65 @@ interface Inputs {
   conPass: string
 }
 
+interface response{
+  message:string,
+  status:Boolean
+}
+
 const Page = () => {
-  const showPass = false
-  const {
+    const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<Inputs>()
 
   const [show, setShow] = useState(false)
+  const [formError, setFormError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const Router = useRouter()
+
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
 
-    const response = await fetch("/api/forSignup", {
-      method: "POST",
-      body: JSON.stringify({
-        userName: data.username,
-        userEmail: data.email,
-        userPassword: data.password
-      }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8"
+    setLoading(true)
+
+    if (data.password === data.conPass) {
+      const response = await fetch("/api/forSignup", {
+        method: "POST",
+        body: JSON.stringify({
+          userName: data.username,
+          userEmail: data.email,
+          userPassword: data.password
+        }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8"
+        }
+      })
+
+      const res = await response.json()
+
+      if(res.status){
+        Router.push("/userVerify")
       }
-    })
 
-    const check = await response.json()
+      else{
+        setFormError(res?.message)
+      }
 
-    console.log(check)
+
+
+    }
+    else {
+      setFormError("Password don't match")
+    }
+
+    setLoading(false)
 
 
 
   }
 
-  const handleShow = ()=>{
+  const handleShow = () => {
     setShow(!show)
   }
 
@@ -66,14 +93,15 @@ const Page = () => {
           {...register("username")}
           className=" px-10 py-2 text-black border-1 border-slate-400 text-sm mt-4 rounded-sm"
           placeholder="Username"
+          required
         />
-        {errors.username && <span className="text-red-500">This field is required</span>}
 
 
         <input
           {...register("email")}
           className="px-10 py-2 text-black border-1 border-slate-400 text-sm mt-4 rounded"
           placeholder="Email"
+          required
         />
 
         <input
@@ -81,28 +109,33 @@ const Page = () => {
           className="px-10 py-2 text-black border-1 border-slate-400 text-sm mt-4 rounded"
           placeholder="Password"
           type={show ? "text" : "password"}
+          required
         />
         <input
           {...register("conPass", { required: true })}
           className="px-10 py-2 text-black border-1 border-slate-400 text-sm mt-4 rounded"
           placeholder="Confirm Password"
           type={show ? "text" : "password"}
+          required
         />
 
-          <div className="check flex flex-row w-full justify-start gap-2 mt-2">
-            <input type="checkbox" onClick={handleShow} id="check" name=""  />
-            <h1 className="text-sm text-slate-400 ">Show Password</h1>
-          </div>
+        {formError && <h1 className="text-sm text-red-500 italic">{formError}</h1>}
 
-        <input type="submit" className="bg-green-500 text-white px-2 py-1 mt-7 rounded cursor-pointer" />
+        <div className="check flex flex-row w-full justify-start gap-2 mt-2">
+          <input type="checkbox" onClick={handleShow} id="check" name="" />
+          <h1 className="text-sm text-slate-400 ">Show Password</h1>
+        </div>
 
-          
+        {loading ? <input type="submit" value={"Loading"} className="bg-green-500 text-white px-2 py-1 mt-7 rounded cursor-pointer" />
+          : <input type="submit" value={"Signup"} className="bg-green-500 text-white px-2 py-1 mt-7 rounded cursor-pointer" />
+        }
+
 
         <Link className=" w-full text-center text-slate-400 text-xs mt-5" href={"/login"}>or, Login to continue</Link>
         <div className="buttons flex flex-row justify-center gap-5 items-center w-full">
-          <button className="px-5 py-2 text-sm bg-blue-500 mt-5 cursor-pointer rounded-lg text-white">Google</button>
+          <button className="px-4 py-2 text-sm bg-slate-200 mt-5 cursor-pointer rounded-md text-white"><img className="h-5" src="https://png.pngtree.com/png-vector/20230817/ourmid/pngtree-google-internet-icon-vector-png-image_9183287.png" ></img></button>
 
-          <button className="px-5 py-2 text-sm bg-blue-500 mt-5 cursor-pointer rounded-lg text-white">Facebook</button>
+          <button className="px-4 py-2 text-sm bg-slate-200 mt-5 cursor-pointer rounded-md text-white"><img className="h-5" src="https://raw.githubusercontent.com/github/explore/9adcff6afda303fb7fcead92954bad819fa7a4bd/topics/facebook/facebook.png" ></img></button>
 
 
         </div>

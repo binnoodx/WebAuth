@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/app/connect/dbConnect";
 import User from "@/app/model/userSchema";
+import { sendEmail } from "@/app/helpers/mailer";
+
 // import { sendMail } from "@/app/helpers/mailer";
 
 export async function POST(req: NextRequest) {
@@ -21,26 +23,32 @@ export async function POST(req: NextRequest) {
                 userPassword: userPassword,
                 userJoined:Date.now(),
                 userOTP:userOTP,
-                userOTPExpiry:Date.now() + 5*60*1000
+                userOTPExpiry:Date.now() + 2*60*1000
             })
 
             await newUser.save()
 
-            //TODO Send Mail to userVerification
+            await sendEmail({email:userEmail , otp:userOTP , isVerify:true})
+
 
             return NextResponse.json({
+                status:true,
                 message: "User Registered Successfully"
             })
         }
         else {
             return NextResponse.json({
-                message: "User already Found"
+                status:false,
+                message: "Email Already on Use"
             })
         }
 
     } catch (error) {
 
-        console.log("Error in User Signup")
+        return NextResponse.json({
+            message:"Error on Signing Up",
+            status:false
+        })
 
     }
 

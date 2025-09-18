@@ -4,6 +4,7 @@ import Link from "next/link"
 import React from "react"
 import { useForm } from "react-hook-form"
 import type { SubmitHandler } from "react-hook-form"
+import { useRouter } from "next/navigation"
 
 interface Inputs {
   username: string
@@ -13,21 +14,23 @@ interface Inputs {
 }
 
 const Page = () => {
-  const showPass = false
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<Inputs>()
 
+  const [loading, setLoading] = useState(false)
   const [show, setShow] = useState(false)
+  const Router = useRouter()
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
 
-    const response = await fetch("/api/forSignup", {
+    setLoading(true)
+
+    const response = await fetch("/api/forLogin", {
       method: "POST",
       body: JSON.stringify({
-        userName: data.username,
         userEmail: data.email,
         userPassword: data.password
       }),
@@ -36,12 +39,15 @@ const Page = () => {
       }
     })
 
-    const check = await response.json()
+    const res = await response.json()
 
-    console.log(check)
+    setLoading(false)
 
+    if (res.status) {
 
+      Router.push("/")
 
+    }
   }
 
   const handleShow = () => {
@@ -68,13 +74,17 @@ const Page = () => {
           {...register("email")}
           className="px-10 py-2 text-black border-1 border-slate-400 text-sm mt-4 rounded"
           placeholder="Email"
+          required
         />
+
+        {errors.email?.type == "required" && <h1 className="itelic text-sm text-red-500">Email is required.</h1>}
 
         <input
           {...register("password", { required: true })}
           className="px-10 py-2 text-black border-1 border-slate-400 text-sm mt-4 rounded"
           placeholder="Password"
           type={show ? "text" : "password"}
+          required
         />
 
 
@@ -83,8 +93,9 @@ const Page = () => {
           <h1 className="text-sm text-slate-400 ">Show Password</h1>
         </div>
 
-        <input type="submit" className="bg-green-500 text-white px-2 py-1 mt-7 rounded cursor-pointer" />
-
+        {loading ? <input type="submit" value={"Loading..."} className="bg-green-500 text-white px-2 py-1 mt-7 rounded cursor-pointer" />
+          : <input type="submit" value={"Login"}  className="bg-green-500 text-white px-2 py-1 mt-7 rounded cursor-pointer" />
+        }
 
         <Link className=" w-full text-center text-slate-400 text-xs mt-5" href={"#"}>Forget Password ?</Link>
 
