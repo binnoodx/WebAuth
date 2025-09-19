@@ -5,6 +5,7 @@ import React from "react"
 import { useForm } from "react-hook-form"
 import type { SubmitHandler } from "react-hook-form"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 
 interface Inputs {
   username: string
@@ -22,6 +23,7 @@ const Page = () => {
 
   const [loading, setLoading] = useState(false)
   const [show, setShow] = useState(false)
+  const [ApiError, setApiError] = useState("")
   const Router = useRouter()
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
@@ -44,9 +46,10 @@ const Page = () => {
     setLoading(false)
 
     if (res.status) {
-
       Router.push("/")
-
+    }
+    else{
+      setApiError(res.message)
     }
   }
 
@@ -87,6 +90,8 @@ const Page = () => {
           required
         />
 
+        {ApiError && <h1 className="text-red-500 italic text-sm">{ApiError}</h1>}
+
 
         <div className="check flex flex-row w-full justify-start gap-2 mt-2">
           <input type="checkbox" onClick={handleShow} id="check" name="" />
@@ -101,9 +106,9 @@ const Page = () => {
 
         <Link className=" w-full text-center text-slate-400 text-xs mt-5" href={"/signup"}>or, Signup to continue</Link>
         <div className="buttons flex flex-row justify-center gap-5 items-center w-full">
-          <button className="px-5 w-1/2 py-2 text-sm bg-blue-500 mt-5 cursor-pointer rounded-lg text-white">Google</button>
+          <button onClick={() => signIn("google", { callbackUrl: "/home" })} className="px-4 py-2 text-sm bg-slate-200 mt-5 cursor-pointer rounded-md text-white"><img className="h-5" src="https://png.pngtree.com/png-vector/20230817/ourmid/pngtree-google-internet-icon-vector-png-image_9183287.png" ></img></button>
 
-          <button className="px-5 w-1/2 py-2 text-sm bg-blue-500 mt-5 cursor-pointer rounded-lg text-white">Facebook</button>
+          <button className="px-4 py-2 text-sm bg-slate-200 mt-5 cursor-pointer rounded-md text-white"><img className="h-5" src="https://raw.githubusercontent.com/github/explore/9adcff6afda303fb7fcead92954bad819fa7a4bd/topics/facebook/facebook.png" ></img></button>
 
 
         </div>

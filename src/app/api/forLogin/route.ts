@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import User from "@/app/model/userSchema";
 import { dbConnect } from "@/app/connect/dbConnect";
+import jwt from "jsonwebtoken"
+import { signIn } from "next-auth/react";
 
-export async function POST(req:NextRequest) {
+export async function POST(req: NextRequest) {
 
     await dbConnect()
 
@@ -10,47 +12,62 @@ export async function POST(req:NextRequest) {
         const data = await req.json()
         const userEmail = data.userEmail
         const userPassword = data.userPassword
+        const searchUser = await User.findOne({ userEmail })
+        
 
 
-        const searchUser = await User.findOne({userEmail})
-
-
-        if(!searchUser){
+        if (!searchUser) {
             return NextResponse.json({
-
-                message:"No such User Found!",
-                success:false,
-                
+                message: "Email doesn't Exist",
+                success: false,
             })
         }
-        else{
+        else {
             const searchUserPass = searchUser.userPassword
 
             //TODO : Decrypt the hashed Password
 
 
-            if(searchUserPass === userPassword){
-                
-                return NextResponse.json({
-                    status:true,
-                    message:"successfully Login!"
+            if (searchUserPass === userPassword) {
+
+                const tokenData = {
+                    id: searchUser._id,
+                    userName: searchUser.userName,
+                    email: searchUser.userEmail
+                }
+                const token = jwt.sign(tokenData, process.env.TOKEN_SECRET!, {
+                    expiresIn: "5d"
+
                 })
+                const response = NextResponse.json({
+                    message: "User Logined Successfully !",
+                    status: true
+                })
+                response.cookies.set("token", token, {
+                    httpOnly: true
+                })
+                return response
+
+
+
+
+
             }
-            else{
+            else {
                 return NextResponse.json({
-                    status:false,
-                    message:"Invalid Password"
+                    status: false,
+                    message: "Invalid Password"
                 })
             }
         }
 
-        
-  
+
+
     } catch (error) {
 
         return NextResponse.json({
-            message:"Something Error in Signup.",
-            success:false
-        })     
-    }    
+            message: "Something Error in Signup.",
+            success: false
+        })
+    }
 }
